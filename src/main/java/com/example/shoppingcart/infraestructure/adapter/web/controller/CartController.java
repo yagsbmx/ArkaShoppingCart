@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/carts")
+@RequestMapping("/api/carts")
 @RequiredArgsConstructor
 public class CartController {
 
@@ -58,6 +58,7 @@ public class CartController {
                 .toList());
     }
 
+
     @PostMapping("/{cartId}/items/{productId}")
     public ResponseEntity<CartResponseDto> addItem(
             @PathVariable("cartId") Long cartId,
@@ -83,6 +84,26 @@ public class CartController {
 
     @PostMapping("/{cartId}/complete")
     public ResponseEntity<CartResponseDto> completeCart(@PathVariable("cartId") Long cartId) {
+        Cart completed = useCase.completeCart(cartId);
+        return ResponseEntity.ok(mapper.toResponseDto(completed));
+    }
+
+    // ===== NUEVOS ENDPOINTS PARA INTEGRACIÓN CON ORDER =====
+
+    @GetMapping("/active/user/{userId}")
+    public ResponseEntity<CartResponseDto> getActiveCartByUser(@PathVariable("userId") Long userId) {
+        var cartOpt = useCase.getAllCarts().stream()
+                .filter(c -> c.getUserId().equals(userId) && c.getStatus().name().equals("ACTIVE"))
+                .findFirst();
+
+        if (cartOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(mapper.toResponseDto(cartOpt.get()));
+    }
+
+    @PutMapping("/{cartId}/complete")
+    public ResponseEntity<CartResponseDto> completeCartPut(@PathVariable("cartId") Long cartId) {
         Cart completed = useCase.completeCart(cartId);
         return ResponseEntity.ok(mapper.toResponseDto(completed));
     }
