@@ -1,5 +1,6 @@
 package com.example.shoppingcart.infraestructure.adapter.persistence.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,5 +49,12 @@ public class CartPersistenceAdapter implements CartRepositoryPort {
     @Transactional
     public void deleteById(Long id) {
         cartJpaRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Cart> findAbandonedSince(LocalDateTime threshold) {
+        return cartJpaRepository.findAbandonedSince(threshold).stream()
+                .map(cartMapper::toDomain)
+                .toList();
     }
 }

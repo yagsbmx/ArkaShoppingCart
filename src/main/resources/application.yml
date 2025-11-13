@@ -1,14 +1,17 @@
 server:
+  server:
   port: 8081
 
 spring:
   application:
     name: shoppingcart-service
+
   datasource:
     url: jdbc:postgresql://localhost:5432/shoppingcartdb
     username: postgres
     password: "0921"
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -16,6 +19,19 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: arkaproyect0921@gmail.com
+    password: TU_APP_PASSWORD  # o desactiva mail.enabled abajo
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+# Desactiva el adaptador de correo si no quieres usar SMTP
+mail:
+  enabled: false
 
 eureka:
   client:
@@ -35,3 +51,8 @@ springdoc:
     path: /swagger-ui.html
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
+
+security:
+  jwt:
+    secret: ${SECURITY_JWT_SECRET:short_secret_key_32_chars_len!!!}
+

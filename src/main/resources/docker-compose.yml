@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  eureka-server:
+    image: netflixoss/eureka:1.4.12
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - eureka.instance.hostname=eureka-server
+      - eureka.client.register-with-eureka=false
+      - eureka.client.fetch-registry=false
+      - eureka.client.serviceUrl.defaultZone=http://eureka-server:8761/eureka/
+
+  shoppingcart-db:
+    image: postgres:16-alpine
+    container_name: shoppingcart-db
+    environment:
+      POSTGRES_DB: shoppingcartdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 0921
+    volumes:
+      - shoppingcart_data:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"
+
+  shoppingcart-service:
+    build: .
+    container_name: shoppingcart-service
+    depends_on:
+      - shoppingcart-db
+      - eureka-server
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://shoppingcart-db:5432/shoppingcartdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 0921
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SECURITY_JWT_SECRET: short_secret_key_32_chars_len!!!
+      MAIL_ENABLED: false
+    restart: always
+
+volumes:
+  shoppingcart_data:

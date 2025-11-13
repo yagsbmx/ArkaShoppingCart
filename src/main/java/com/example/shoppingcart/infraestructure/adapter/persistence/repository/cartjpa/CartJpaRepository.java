@@ -29,4 +29,8 @@ public interface CartJpaRepository extends JpaRepository<CartEntity, Long> {
     
     @Query("select distinct c from CartEntity c left join fetch c.items")
     List<CartEntity> findAllWithItems();
+
+    @org.springframework.data.jpa.repository.Query("select c from CartEntity c where c.status = com.example.shoppingcart.domain.model.enums.CartStatus.ACTIVE and c.updatedAt < :threshold")
+    java.util.List<com.example.shoppingcart.infraestructure.adapter.persistence.entity.CartEntity> findAbandonedSince(java.time.LocalDateTime threshold);
+
 }

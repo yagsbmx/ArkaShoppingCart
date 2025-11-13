@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/carts")
@@ -53,11 +54,9 @@ public class CartController {
     @GetMapping
     public ResponseEntity<List<CartResponseDto>> getAllCarts() {
         List<Cart> carts = useCase.getAllCarts();
-        return ResponseEntity.ok(carts.stream()
-                .map(mapper::toResponseDto)
-                .toList());
+        if (carts == null || carts.isEmpty()) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(carts.stream().map(mapper::toResponseDto).toList());
     }
-
 
     @PostMapping("/{cartId}/items/{productId}")
     public ResponseEntity<CartResponseDto> addItem(
@@ -88,8 +87,6 @@ public class CartController {
         return ResponseEntity.ok(mapper.toResponseDto(completed));
     }
 
-    // ===== NUEVOS ENDPOINTS PARA INTEGRACIÓN CON ORDER =====
-
     @GetMapping("/active/user/{userId}")
     public ResponseEntity<CartResponseDto> getActiveCartByUser(@PathVariable("userId") Long userId) {
         var cartOpt = useCase.getAllCarts().stream()
@@ -102,12 +99,6 @@ public class CartController {
         return ResponseEntity.ok(mapper.toResponseDto(cartOpt.get()));
     }
 
-    @PutMapping("/{cartId}/complete")
-    public ResponseEntity<CartResponseDto> completeCartPut(@PathVariable("cartId") Long cartId) {
-        Cart completed = useCase.completeCart(cartId);
-        return ResponseEntity.ok(mapper.toResponseDto(completed));
-    }
-
     @GetMapping("/{cartId}/total")
     public ResponseEntity<BigDecimal> calculateTotal(@PathVariable("cartId") Long cartId) {
         BigDecimal total = useCase.calculateTotal(cartId);
@@ -118,5 +109,19 @@ public class CartController {
     public ResponseEntity<Void> deleteCart(@PathVariable("cartId") Long cartId) {
         useCase.deleteCart(cartId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/abandoned")
+    public ResponseEntity<List<CartResponseDto>> listAbandoned(
+            @RequestParam(name = "minutes", defaultValue = "60") long minutes) {
+        List<Cart> carts = useCase.findAbandoned(minutes);
+        if (carts == null || carts.isEmpty()) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(carts.stream().map(mapper::toResponseDto).toList());
+    }
+
+    @PostMapping("/abandoned/{cartId}/notify")
+    public ResponseEntity<Map<String, String>> notifyAbandoned(@PathVariable("cartId") Long cartId) {
+        useCase.notifyAbandoned(cartId);
+        return ResponseEntity.ok(Map.of("message", "Recordatorio de carrito abandonado enviado"));
     }
 }

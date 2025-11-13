@@ -6,7 +6,6 @@ import java.util.Optional;
 import com.example.shoppingcart.domain.model.Cart;
 
 public interface CartUseCase {
-
     Cart createCart(Cart cart);
     Optional<Cart> getCart(Long id);
     List<Cart> getAllCarts();
@@ -17,6 +16,9 @@ public interface CartUseCase {
     Cart completeCart(Long cartId);
     BigDecimal calculateTotal(Long cartId);
     void checkAbandonedCarts();
+    void notifyAbandoned(Long cartId);
+    List<Cart> findAbandoned(long minutes);
 }
+
 
 
